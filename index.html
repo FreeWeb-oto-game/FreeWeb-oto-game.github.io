@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#071925" />
+    <meta name="description" content="Melodiniq (CHUNITHM X-VERSE-X / onoken a.k.a. owl＊tree) 風 8レーンタッチ音ゲーと譜面エディター" />
+    <title>Starlight Beats | Melodiniq</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body data-mode="play">
+    <main class="app-shell">
+      <div class="rotate-hint" aria-hidden="true">
+        <span class="rotate-icon">⤾</span>
+        <strong>横画面にしてください</strong>
+        <small>Rotate to landscape for the best experience</small>
+      </div>
+      <section class="game-stage" aria-label="Starlight Beats">
+        <canvas id="gameCanvas" width="1600" height="900" aria-label="Rhythm game lane"></canvas>
+        <nav class="mode-nav" aria-label="View mode">
+          <button class="mode-button is-active" id="playModeButton" type="button">PLAY</button>
+          <button class="mode-button" id="editorModeButton" type="button">CHART EDIT</button>
+        </nav>
+        <div class="score-hud" aria-live="polite">
+          <div class="rank-badge"><strong id="rank">D</strong><span>RATING</span></div>
+          <div class="score-board">
+            <div class="score-topline"><span>SCORE</span><span id="chartLabel">MELODINIQ / ULTIMA</span></div>
+            <p class="song-meta">onoken a.k.a. owl＊tree ・ BPM 193</p>
+            <div class="score-rail" aria-hidden="true"><span id="scoreProgress"></span></div>
+            <strong id="score">00000000</strong>
+          </div>
+        </div>
+        <div class="life-hud" aria-live="polite">
+          <span class="life-label">LIFE</span><div class="life-rail" aria-hidden="true"><span id="lifeBar"></span></div><strong id="lifeValue">1000</strong>
+          <button class="pause-button" id="pauseButton" type="button" aria-label="Pause">II</button>
+        </div>
+        <div class="judgement" id="judgement" aria-live="polite">READY</div>
+        <div class="combo-burst" id="comboBurst" aria-live="polite"><strong id="combo">0</strong><span>COMBO</span></div>
+        <div class="start-panel" id="startPanel">
+          <p class="start-song-title">MELODINIQ</p>
+          <button class="start-button" id="startButton" type="button">START</button>
+          <button class="sound-button" id="muteButton" type="button" aria-pressed="false">SOUND ON</button>
+        </div>
+        <section class="editor-screen" id="editorScreen" aria-label="Chart editor" aria-hidden="true">
+          <header class="editor-header">
+            <div><p>ST★RLIGHT BEATS</p><h1>CHART STUDIO</h1></div>
+            <div class="editor-actions">
+              <button class="tool-button" id="exportChartButton" type="button">EXPORT</button>
+              <label class="tool-button file-button">IMPORT<input id="importChartInput" type="file" accept="application/json" /></label>
+              <button class="tool-button danger-button" id="resetChartButton" type="button">RESET</button>
+            </div>
+          </header>
+          <div class="editor-meta">
+            <label>TITLE<input id="chartTitleInput" type="text" maxlength="42" /></label>
+            <label>BPM<input id="chartBpmInput" type="number" min="60" max="300" step="1" /></label>
+            <label>MEASURE<input id="measureInput" type="number" min="1" max="999" step="1" value="1" /></label>
+            <output id="chartSaveState">SAVED</output>
+          </div>
+          <div class="editor-workspace">
+            <section class="timeline-panel">
+              <div class="panel-heading"><span id="measureLabel">MEASURE 001</span><span>16 STEPS</span></div>
+              <div class="chart-grid" id="chartGrid" aria-label="Chart grid"></div>
+              <div class="lane-labels" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span></div>
+            </section>
+            <aside class="inspector-panel">
+              <div class="panel-heading"><span>NOTE</span><span id="noteCount">0 NOTES</span></div>
+              <div class="note-form">
+                <label>STEP<input id="noteStepInput" type="number" min="0" max="15" step="1" value="0" /></label>
+                <label>LANE<input id="noteLaneInput" type="number" min="1" max="8" step="1" value="4" /></label>
+                <label>WIDTH<input id="noteWidthInput" type="number" min="1" max="8" step="1" value="1" /></label>
+                <label>TYPE<select id="noteTypeInput"><option value="tap">TAP</option><option value="gold">EX TAP</option><option value="flick">FLICK</option><option value="hold">HOLD</option></select></label>
+                <label>END M.<input id="noteEndMeasureInput" type="number" min="1" max="999" step="1" value="2" /></label>
+                <label>END STEP<input id="noteEndStepInput" type="number" min="0" max="15" step="1" value="0" /></label>
+                <label>END LANE<input id="noteEndLaneInput" type="number" min="1" max="8" step="1" value="4" /></label>
+              </div>
+              <button class="add-note-button" id="addNoteButton" type="button">ADD NOTE</button>
+              <p class="editor-tip">グリッドをタップしてTAPを追加。ノーツ一覧から削除できます。MELODINIQの譜面(153小節)は元々 lane-map.js で自動生成されているので、ここで自由に上書き調整できます。</p>
+            </aside>
+          </div>
+          <section class="note-list-panel">
+            <div class="panel-heading"><span>NOTES IN MEASURE</span><span id="measureNoteCount">0</span></div>
+            <div class="note-list" id="noteList"></div>
+          </section>
+        </section>
+        <dialog class="result-modal" id="resultModal">
+          <form method="dialog">
+            <p>RESULT</p><h2 id="resultTitle">LIVE CLEAR</h2>
+            <div class="result-grid">
+              <div><span>SCORE</span><strong id="resultScore">0</strong></div><div><span>MAX COMBO</span><strong id="resultCombo">0</strong></div><div><span>PERFECT</span><strong id="resultPerfect">0</strong></div><div><span>MISS</span><strong id="resultMiss">0</strong></div>
+            </div>
+            <button class="start-button" value="close" type="submit">OK</button>
+          </form>
+        </dialog>
+      </section>
+    </main>
+    <script src="lane-map.js"></script>
+    <script src="game.js"></script>
+    <script src="editor.js"></script>
+  </body>
+</html>
