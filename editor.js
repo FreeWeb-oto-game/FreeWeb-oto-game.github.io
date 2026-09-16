@@ -2,7 +2,15 @@
   "use strict";
 
   const STORAGE_KEY = "starlight-beats-chart-melodiniq-v1";
-  const seedChart = structuredClone(window.MELODINIQ_CHART);
+  const seedChart = structuredClone(
+    window.MELODINIQ_CHART ?? {
+      title: "CUSTOM CHART",
+      bpm: 193,
+      divisions: 8,
+      audioPath: "assets/melodiniq.mp3",
+      notes: [],
+    },
+  );
   const playButton = document.querySelector("#playModeButton");
   const editorButton = document.querySelector("#editorModeButton");
   const editorScreen = document.querySelector("#editorScreen");
