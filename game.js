@@ -179,28 +179,24 @@
   }
 
   function startSongOrFallback() {
-    fetch(SONG_AUDIO_PATH, { method: "HEAD", cache: "no-store" }).then((response) => {
-      if (!response.ok || state !== "playing") {
-        usingSongAudio = false;
-        scheduleMusic();
-        return;
-      }
-      songAudio.src = SONG_AUDIO_PATH;
-      songAudio.load();
-      songAudio.currentTime = 0;
-      songAudio.volume = muted ? 0 : 0.85;
-      songAudio.play().then(() => {
-        usingSongAudio = true;
-        clockStartMs = performance.now() - songAudio.currentTime * 1000;
-        clearInterval(melodyTimer);
-      }).catch(() => {
-        usingSongAudio = false;
-        scheduleMusic();
-      });
-    }).catch(() => {
+    let settled = false;
+    const fallbackToGenerated = () => {
+      if (settled) return;
+      settled = true;
       usingSongAudio = false;
       scheduleMusic();
-    });
+    };
+    songAudio.onerror = fallbackToGenerated;
+    songAudio.src = SONG_AUDIO_PATH;
+    songAudio.currentTime = 0;
+    songAudio.volume = muted ? 0 : 0.85;
+    songAudio.play().then(() => {
+      if (settled || state !== "playing") return;
+      settled = true;
+      usingSongAudio = true;
+      clockStartMs = performance.now() - songAudio.currentTime * 1000;
+      clearInterval(melodyTimer);
+    }).catch(fallbackToGenerated);
   }
 
   function resetGame() {
